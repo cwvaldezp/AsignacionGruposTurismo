@@ -58,6 +58,9 @@ th{font-size:13px;color:var(--muted);font-weight:600}
 .cal .dots{display:flex;justify-content:center;gap:2px;margin-top:1px}
 .cal .dots span{width:6px;height:6px;border-radius:50%}
 .cal .sel{outline:2px solid var(--accent)}
+.cal .fer{color:var(--bad);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--bad)}
+.ferlist div{padding:3px 0;border-bottom:1px solid var(--line);font-size:14px}
+.fertag{color:var(--bad);font-size:12px;font-weight:600}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:13px}
 .legend span{display:inline-flex;gap:6px;align-items:center}
 .pill{font-size:12px;padding:1px 7px;border-radius:99px;background:var(--soft)}
@@ -114,6 +117,11 @@ th{font-size:13px;color:var(--muted);font-weight:600}
       <label>Ver calendario de <select id="calGuia"><option value="">Todos</option></select></label>
     </div>
     <div class="months" id="months"></div>
+  </div>
+  <div class="card">
+    <h2>Feriados nacionales de Ecuador <span id="ferAnio"></span></h2>
+    <div class="ferlist" id="ferList"></div>
+    <div class="small muted" style="margin-top:8px">Fechas de descanso según el calendario publicado para 2027, con los traslados ya aplicados. Las marcadas "por confirmar" no coinciden entre las fuentes; revísalas con el Ministerio del Trabajo.</div>
   </div>
   <div class="card" id="dayPanel"><span class="muted">Toca un día para ver sus grupos o agregar uno nuevo.</span></div>
 </section>
@@ -215,6 +223,21 @@ th{font-size:13px;color:var(--muted);font-weight:600}
 <script>
 const KEY='asignacion-grupos-v1';
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+// Feriados nacionales Ecuador (día de descanso, con traslados aplicados)
+const FERIADOS={2027:[
+ ['2027-01-01','Año Nuevo'],
+ ['2027-02-08','Carnaval'],['2027-02-09','Carnaval'],
+ ['2027-03-26','Viernes Santo'],
+ ['2027-04-30','Día del Trabajo (trasladado del sáb 1 de mayo)'],
+ ['2027-05-24','Batalla de Pichincha'],
+ ['2027-08-09','Primer Grito de Independencia (trasladado del mar 10 de agosto)'],
+ ['2027-10-08','Independencia de Guayaquil (trasladado del sáb 9 de octubre)'],
+ ['2027-11-01','Día de Difuntos (trasladado del mar 2, por confirmar)'],
+ ['2027-11-02','Independencia de Cuenca (trasladado del mié 3, por confirmar)'],
+ ['2027-12-25','Navidad'],
+]};
+const feriado=ds=>(FERIADOS[S.anio]||[]).find(f=>f[0]===ds)?.[1];
+const feriadosEn=f=>(FERIADOS[S.anio]||[]).filter(x=>x[0]>=f.inicio&&x[0]<=f.fin);
 const uid=()=>Math.random().toString(36).slice(2,9);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -305,7 +328,7 @@ function renderSlots(){
     }
     if(solo && !anyFree) continue;
     const e=emp(f.empresaId);
-    rows+=`<tr><td><span class="dot" style="background:${e.color}"></span> ${esc(e.nombre)}</td><td><b>${fmt(f.inicio)} – ${fmt(f.fin)}</b><div class="small muted">${dias(f)} días</div></td><td>${esc(f.nombre)}${f.notas?`<div class="small muted">${esc(f.notas)}</div>`:''}</td><td>${cells}</td></tr>`;
+    rows+=`<tr><td><span class="dot" style="background:${e.color}"></span> ${esc(e.nombre)}</td><td><b>${fmt(f.inicio)} – ${fmt(f.fin)}</b><div class="small muted">${dias(f)} días</div>${feriadosEn(f).map(x=>`<div class="fertag">Feriado ${fmt(x[0])}: ${esc(x[1].split(' (')[0])}</div>`).join('')}</td><td>${esc(f.nombre)}${f.notas?`<div class="small muted">${esc(f.notas)}</div>`:''}</td><td>${cells}</td></tr>`;
   }
   $('tSlots').innerHTML=rows?`<tr><th>Empresa</th><th>Fechas</th><th>Grupo</th><th>Puestos</th></tr>`+rows:`<tr><td class="muted">No hay grupos con estos filtros. Carga las fechas en la pestaña "Fechas / grupos".</td></tr>`;
 }
@@ -346,7 +369,9 @@ function renderFiltros(){
 // calendario
 let diaSel=null;
 function renderCal(){
-  $('legend').innerHTML=S.empresas.map(e=>`<span><span class="dot" style="background:${e.color}"></span>${esc(e.nombre)}</span>`).join('')+'<span class="muted">· fondo más intenso = puestos sin llenar</span>';
+  $('legend').innerHTML=S.empresas.map(e=>`<span><span class="dot" style="background:${e.color}"></span>${esc(e.nombre)}</span>`).join('')+'<span><span class="dot" style="background:none;box-shadow:inset 0 0 0 1.5px var(--bad)"></span><span class="fertag">Feriado</span></span><span class="muted">· fondo más intenso = puestos sin llenar</span>';
+  const fl=FERIADOS[S.anio]||[]; $('ferAnio').textContent=S.anio;
+  $('ferList').innerHTML=fl.length?fl.map(([d,n])=>{const x=toD(d);return `<div><b>${['dom','lun','mar','mié','jue','vie','sáb'][x.getDay()]} ${x.getDate()} ${MESES[x.getMonth()]}</b> · ${esc(n)}</div>`}).join(''):'<span class="muted">No hay feriados cargados para este año.</span>';
   const g=$('calGuia').value; const A=S.anio; let html='';
   const lista=g?asigDeGuia(g).map(a=>a.f):S.fechas;
   for(let m=0;m<12;m++){
@@ -357,7 +382,8 @@ function renderCal(){
       const fs=lista.filter(f=>f.inicio<=ds&&f.fin>=ds);
       const dots=fs.slice(0,4).map(f=>`<span style="background:${emp(f.empresaId).color}"></span>`).join('');
       let bg=''; if(fs.length){const pend=fs.some(f=>{for(let r=1;r<=f.cupos;r++)if(!S.asig[key(f.id,r)])return true});bg=`background:color-mix(in srgb, ${emp(fs[0].empresaId).color} ${g?28:(pend?30:12)}%, transparent)`}
-      c+=`<div class="d ${diaSel===ds?'sel':''}" data-d="${ds}" style="${bg}">${d}<div class="dots">${dots}</div></div>`;
+      const fn=feriado(ds);
+      c+=`<div class="d ${diaSel===ds?'sel':''} ${fn?'fer':''}" data-d="${ds}" style="${bg}" ${fn?`title="${esc(fn)}"`:''}>${d}<div class="dots">${dots}</div></div>`;
     }
     html+=`<div class="month"><h3>${MESES[m]} ${A}</h3>${c}</div></div>`;
   }
@@ -368,7 +394,8 @@ $('months').addEventListener('click',e=>{const d=e.target.closest('.d');if(!d)re
 function renderDia(){
   if(!diaSel) return; const fs=S.fechas.filter(f=>f.inicio<=diaSel&&f.fin>=diaSel);
   const d=toD(diaSel);
-  $('dayPanel').innerHTML=`<h2>${d.getDate()} de ${MESES[d.getMonth()]}</h2>`+
+  const fn=feriado(diaSel);
+  $('dayPanel').innerHTML=`<h2>${d.getDate()} de ${MESES[d.getMonth()]}</h2>`+(fn?`<div class="fertag" style="font-size:14px;margin-bottom:6px">Feriado: ${esc(fn)}</div>`:'')+
    (fs.length?fs.map(f=>`<div style="margin:6px 0"><span class="dot" style="background:${emp(f.empresaId).color}"></span> <b>${esc(emp(f.empresaId).nombre)}</b> ${esc(f.nombre)} · ${fmt(f.inicio)}–${fmt(f.fin)}<br>`+
      Array.from({length:f.cupos},(_,i)=>{const a=S.asig[key(f.id,i+1)];return `<span class="pill">G${i+1}: ${a?esc(gName(a)):'<i>libre</i>'}</span>`}).join(' ')+'</div>').join(''):'<div class="muted">Sin grupos este día.</div>')+
    `<div class="row noprint"><button class="b p" id="bAddDia">+ Agregar grupo que empieza este día</button></div>`;
