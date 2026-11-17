@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asignación de Grupos 2027</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --ink:#1d2330; --muted:#667085; --line:#e3e6ec;
+  --accent:#1f5fbf; --accent-ink:#fff; --ok:#1a7f4b; --warn:#b26a00; --bad:#c0362c; --soft:#eef3fb;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#12151b; --card:#1b2029; --ink:#e7eaf0; --muted:#98a2b3; --line:#2c3340;
+    --accent:#5b9bff; --accent-ink:#0b1220; --ok:#4cc38a; --warn:#f0a840; --bad:#ff6b5e; --soft:#1f2a3c; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:18px}
+header .sub{color:var(--muted);font-size:13px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+nav button{border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit}
+nav button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+main{max-width:1200px;margin:0 auto;padding:16px}
+section{display:none} section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 10px;font-size:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:800px){.grid2{grid-template-columns:1fr}}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+textarea{width:100%;min-height:80px}
+button.b{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer}
+button.p{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.d{color:var(--bad)}
+button.sm{padding:3px 8px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.muted{color:var(--muted)} .small{font-size:13px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:600}
+.tw{overflow-x:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;background:var(--soft);margin:3px;font-size:14px}
+.chip button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
+.turno{font-size:22px;font-weight:700}
+.turnbox{background:var(--soft);border-radius:12px;padding:14px;margin-bottom:12px}
+.slot{display:inline-block;margin:2px;padding:4px 9px;border-radius:7px;border:1px solid var(--line);font-size:13px;cursor:pointer;background:var(--card);color:var(--ink)}
+.slot.taken{cursor:default;opacity:.85;background:var(--soft)}
+.slot.lead{font-weight:700}
+.slot.free:hover{border-color:var(--accent)}
+.slot.blocked{opacity:.4;cursor:not-allowed}
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.month h3{margin:0 0 6px;font-size:14px;text-transform:capitalize}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal div{font-size:12px;text-align:center;padding:3px 0;border-radius:5px;min-height:30px;position:relative;cursor:pointer}
+.cal .h{color:var(--muted);font-weight:600;cursor:default;min-height:0}
+.cal .d:hover{outline:1px solid var(--accent)}
+.cal .dots{display:flex;justify-content:center;gap:2px;margin-top:1px}
+.cal .dots span{width:6px;height:6px;border-radius:50%}
+.cal .sel{outline:2px solid var(--accent)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:13px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.pill{font-size:12px;padding:1px 7px;border-radius:99px;background:var(--soft)}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;display:none;z-index:9;max-width:90vw}
+@media print{
+  header,nav,.noprint{display:none!important}
+  section{display:none!important} section.print{display:block!important}
+  .card{border:0;padding:0}
+  body{background:#fff;color:#000}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Asignación de Grupos de Trabajo <span id="hYear">2027</span></h1>
+  <div class="sub">Sorteo de turnos, selección de fechas por rol y calendario anual. Los datos se guardan en este navegador. Haz un respaldo seguido.</div>
+  <nav id="tabs">
+    <button data-t="seleccion" class="on">1. Selección</button>
+    <button data-t="calendario">2. Calendario</button>
+    <button data-t="resumen">3. Resumen y exportar</button>
+    <button data-t="fechas">Fechas / grupos</button>
+    <button data-t="config">Configuración</button>
+  </nav>
+</header>
+<main>
+
+<!-- SELECCIÓN -->
+<section id="seleccion" class="on">
+  <div class="card">
+    <div class="turnbox" id="turnBox"></div>
+    <div class="row noprint">
+      <label>Empresa <select id="fEmp"></select></label>
+      <label>Mes <select id="fMes"></select></label>
+      <label><input type="checkbox" id="fSoloLibres" checked> Solo con puestos libres</label>
+      <label>Guía que elige <select id="pickGuia"></select></label>
+    </div>
+    <div class="small muted">Toca un puesto libre (G1, G2...) para asignarlo al guía de la lista. <b>G1 = Líder</b>. Si un puesto aparece en gris, ese guía no puede tomarlo (fecha cruzada o límite alcanzado), pero puedes forzarlo con Shift + clic.</div>
+  </div>
+  <div class="card">
+    <div class="tw"><table id="tSlots"></table></div>
+  </div>
+  <div class="card">
+    <h2>Últimas elecciones</h2>
+    <div id="hist" class="small"></div>
+  </div>
+</section>
+
+<!-- CALENDARIO -->
+<section id="calendario">
+  <div class="card">
+    <div class="legend" id="legend"></div>
+    <div class="row noprint">
+      <label>Ver calendario de <select id="calGuia"><option value="">Todos</option></select></label>
+    </div>
+    <div class="months" id="months"></div>
+  </div>
+  <div class="card" id="dayPanel"><span class="muted">Toca un día para ver sus grupos o agregar uno nuevo.</span></div>
+</section>
+
+<!-- RESUMEN -->
+<section id="resumen" class="print">
+  <div class="card">
+    <div class="row noprint">
+      <button class="b p" id="bCsv">Descargar Excel (CSV)</button>
+      <button class="b" id="bPrint">Imprimir / PDF</button>
+      <button class="b" id="bJson">Guardar respaldo (.json)</button>
+      <label class="b" style="cursor:pointer">Cargar respaldo <input type="file" id="fJson" accept=".json" hidden></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Balance por guía</h2>
+    <div class="tw"><table id="tBal"></table></div>
+  </div>
+  <div class="card">
+    <h2>Detalle por guía</h2>
+    <div id="detGuias"></div>
+  </div>
+</section>
+
+<!-- FECHAS -->
+<section id="fechas">
+  <div class="grid2">
+    <div class="card">
+      <h2>Agregar grupo / salida</h2>
+      <div class="row"><label>Empresa <select id="nEmp"></select></label></div>
+      <div class="row"><label>Inicio <input type="date" id="nIni"></label><label>Fin <input type="date" id="nFin"></label></div>
+      <div class="row"><label>Grupo / barco / código <input id="nNom" placeholder="ej. Celebrity Flora"></label></div>
+      <div class="row"><label>Nº de guías <input type="number" id="nCup" min="1" max="10" value="3" style="width:70px"></label></div>
+      <div class="row"><label style="flex:1">Notas <input id="nNot" style="width:100%"></label></div>
+      <div class="row"><button class="b p" id="bAddF">Agregar</button></div>
+    </div>
+    <div class="card">
+      <h2>Pegar lista (desde Excel)</h2>
+      <div class="small muted">Una fila por grupo, columnas separadas por tab, coma o punto y coma:<br><b>Empresa ; Inicio ; Fin ; Grupo ; Nº guías</b>. Fechas en formato dd/mm/aaaa o aaaa-mm-dd.</div>
+      <textarea id="paste" placeholder="Celebrity Cruises;12/01/2027;19/01/2027;Flora;3&#10;Silversea;03/02/2027;10/02/2027;Silver Origin;2"></textarea>
+      <div class="row"><button class="b p" id="bPaste">Importar</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Grupos cargados <span class="pill" id="nF"></span></h2>
+    <div class="tw"><table id="tFechas"></table></div>
+  </div>
+</section>
+
+<!-- CONFIG -->
+<section id="config">
+  <div class="grid2">
+    <div class="card">
+      <h2>Guías (compañeros)</h2>
+      <div id="lGuias"></div>
+      <div class="row"><input id="iGuia" placeholder="Nombre del guía"><button class="b p" id="bGuia">Agregar</button></div>
+    </div>
+    <div class="card">
+      <h2>Empresas</h2>
+      <div id="lEmps"></div>
+      <div class="row"><input id="iEmp" placeholder="Empresa"><input type="color" id="iEmpC" value="#7a4fd1"><button class="b p" id="bEmp">Agregar</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Turnos de elección</h2>
+    <div class="small muted">El orden en que eligen. "Serpiente" quiere decir que en la vuelta 2 el orden se invierte (el último elige primero), así es más justo.</div>
+    <div id="lOrden"></div>
+    <div class="row">
+      <button class="b p" id="bSorteo">Sortear orden al azar</button>
+      <label>Modo <select id="modo"><option value="serpiente">Serpiente (ida y vuelta)</option><option value="fijo">Siempre el mismo orden</option></select></label>
+      <label>Elecciones por turno <input type="number" id="porTurno" min="1" max="10" value="1" style="width:60px"></label>
+      <button class="b" id="bReiniciarTurnos">Volver al primer turno</button>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>Reglas</h2>
+      <div class="row"><label><input type="checkbox" id="rTras"> No permitir fechas cruzadas para un mismo guía</label></div>
+      <div class="row"><label>Días de descanso mínimos entre grupos <input type="number" id="rDesc" min="0" value="0" style="width:60px"></label></div>
+      <div class="row"><label>Máximo de grupos por guía (0 = sin límite) <input type="number" id="rMax" min="0" value="0" style="width:60px"></label></div>
+      <div class="row"><label>Máximo de veces como Guía 1 por guía (0 = sin límite) <input type="number" id="rMaxG1" min="0" value="0" style="width:60px"></label></div>
+    </div>
+    <div class="card">
+      <h2>Funciones por rol</h2>
+      <div id="lRoles"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Año y datos</h2>
+    <div class="row"><label>Año <input type="number" id="anio" style="width:90px"></label>
+      <button class="b d" id="bBorrarAsig">Borrar todas las asignaciones</button>
+      <button class="b d" id="bBorrarTodo">Borrar todo y empezar de cero</button>
+      <button class="b" id="bDemo">Cargar fechas de ejemplo</button></div>
+  </div>
+</section>
+</main>
+<div id="toast"></div>
+
+<script>
+const KEY='asignacion-grupos-v1';
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const uid=()=>Math.random().toString(36).slice(2,9);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const DEFAULT_ROLES=[
+ 'Líder del grupo: punto de contacto con la empresa y el barco, coordina al equipo, maneja tiempos, imprevistos y el reporte final.',
+ 'Apoyo al líder: control de pasajeros, conteo en embarque/desembarque y logística de transporte.',
+ 'Apoyo en ruta: acompañamiento, atención a pasajeros, cierre del grupo (último en la fila).',
+ 'Apoyo adicional.','Apoyo adicional.','Apoyo adicional.'];
+
+function nuevoEstado(){
+  const g=['Diana Cazañas','Miriam Barona','Diego Torres','Pablo Silva','Esteban Garces'].map(n=>({id:uid(),nombre:n}));
+  return {anio:2027,
+    empresas:[{id:uid(),nombre:'Celebrity Cruises',color:'#1f5fbf'},{id:uid(),nombre:'Silversea',color:'#8a6d1f'}],
+    guias:g, roles:DEFAULT_ROLES.slice(), fechas:[], asig:{},
+    turnos:{orden:g.map(x=>x.id),modo:'serpiente',porTurno:1,paso:0},
+    reglas:{traslape:true,descanso:0,max:0,maxG1:0}, hist:[]};
+}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S) S=nuevoEstado();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('No se pudo guardar en el navegador. Descarga un respaldo.')}}
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3500)}
+
+// ---------- helpers ----------
+const emp=id=>S.empresas.find(e=>e.id===id)||{nombre:'?',color:'#999'};
+const guia=id=>S.guias.find(g=>g.id===id);
+const gName=id=>guia(id)?.nombre||'(eliminado)';
+const toD=s=>new Date(s+'T00:00:00');
+const fmt=s=>{if(!s)return'';const d=toD(s);return d.getDate()+' '+MESES[d.getMonth()].slice(0,3)};
+const dias=f=>Math.round((toD(f.fin)-toD(f.inicio))/864e5)+1;
+const key=(fid,r)=>fid+'|'+r;
+function asigDeGuia(gid){const out=[];for(const k in S.asig){if(S.asig[k]===gid){const [fid,r]=k.split('|');const f=S.fechas.find(x=>x.id===fid);if(f)out.push({f,rol:+r})}}return out.sort((a,b)=>a.f.inicio.localeCompare(b.f.inicio))}
+function fechasOrdenadas(){return S.fechas.slice().sort((a,b)=>a.inicio.localeCompare(b.inicio)||emp(a.empresaId).nombre.localeCompare(emp(b.empresaId).nombre))}
+
+// returns null if ok, otherwise reason
+function problema(gid,f,rol){
+  const mias=asigDeGuia(gid);
+  if(mias.some(a=>a.f.id===f.id)) return 'ya está en este grupo';
+  if(S.reglas.max>0 && mias.length>=S.reglas.max) return 'llegó al máximo de '+S.reglas.max+' grupos';
+  if(rol===1 && S.reglas.maxG1>0 && mias.filter(a=>a.rol===1).length>=S.reglas.maxG1) return 'llegó al máximo de '+S.reglas.maxG1+' veces como Guía 1';
+  if(S.reglas.traslape){
+    const d=(+S.reglas.descanso||0)*864e5;
+    for(const a of mias){
+      if(toD(f.inicio)-d<=toD(a.f.fin) && toD(a.f.inicio)-d<=toD(f.fin))
+        return 'se cruza con '+emp(a.f.empresaId).nombre+' '+fmt(a.f.inicio)+'–'+fmt(a.f.fin);
+    }
+  }
+  return null;
+}
+
+// ---------- turnos ----------
+function turnoActual(){
+  const o=S.turnos.orden.filter(id=>guia(id)); const n=o.length; if(!n) return null;
+  const pt=Math.max(1,+S.turnos.porTurno||1);
+  const t=Math.floor(S.turnos.paso/pt); const ronda=Math.floor(t/n); let i=t%n;
+  if(S.turnos.modo==='serpiente' && ronda%2===1) i=n-1-i;
+  const restantes=pt-(S.turnos.paso%pt);
+  const sig=[]; for(let k=1;k<=Math.min(3,n-1);k++){const tt=t+k;const rr=Math.floor(tt/n);let ii=tt%n;if(S.turnos.modo==='serpiente'&&rr%2===1)ii=n-1-ii;sig.push(o[ii])}
+  return {gid:o[i],ronda:ronda+1,restantes,sig};
+}
+function libres(){let c=0;for(const f of S.fechas)for(let r=1;r<=f.cupos;r++)if(!S.asig[key(f.id,r)])c++;return c}
+
+// ---------- render ----------
+function renderTurno(){
+  const t=turnoActual(); const box=$('turnBox');
+  if(!t){box.innerHTML='<span class="muted">Agrega guías en Configuración.</span>';return}
+  box.innerHTML=`<div class="small muted">Vuelta ${t.ronda} · ${libres()} puestos libres</div>
+   <div class="turno">Turno de: ${esc(gName(t.gid))}</div>
+   <div class="small">${t.restantes>1?'Le quedan '+t.restantes+' elecciones en este turno · ':''}Siguen: ${t.sig.map(id=>esc(gName(id))).join(' → ')||'—'}</div>
+   <div class="row noprint"><button class="b sm" id="bPasar">Pasa (no elige)</button><button class="b sm" id="bDeshacer">Deshacer la última</button></div>`;
+  $('bPasar').onclick=()=>{S.hist.unshift({tipo:'pasa',gid:t.gid,paso:S.turnos.paso});S.turnos.paso++;save();render()};
+  $('bDeshacer').onclick=deshacer;
+  const sel=$('pickGuia'); sel.innerHTML=S.guias.map(g=>`<option value="${g.id}">${esc(g.nombre)}</option>`).join(''); sel.value=t.gid;
+}
+function renderSlots(){
+  const fe=$('fEmp').value, fm=$('fMes').value, solo=$('fSoloLibres').checked, gid=$('pickGuia').value;
+  let rows=''; const maxC=Math.max(1,...S.fechas.map(f=>f.cupos));
+  for(const f of fechasOrdenadas()){
+    if(fe && f.empresaId!==fe) continue;
+    if(fm!=='' && toD(f.inicio).getMonth()!=+fm && toD(f.fin).getMonth()!=+fm) continue;
+    let anyFree=false, cells='';
+    for(let r=1;r<=f.cupos;r++){
+      const a=S.asig[key(f.id,r)];
+      if(a){cells+=`<span class="slot taken ${r===1?'lead':''}" data-f="${f.id}" data-r="${r}" title="Toca para quitar">G${r}: ${esc(gName(a))}</span>`}
+      else{anyFree=true;const p=gid?problema(gid,f,r):null;
+        cells+=`<span class="slot free ${p?'blocked':''} ${r===1?'lead':''}" data-f="${f.id}" data-r="${r}" title="${esc(p||'Asignar')}">G${r}${r===1?' Líder':''}</span>`}
+    }
+    if(solo && !anyFree) continue;
+    const e=emp(f.empresaId);
+    rows+=`<tr><td><span class="dot" style="background:${e.color}"></span> ${esc(e.nombre)}</td><td><b>${fmt(f.inicio)} – ${fmt(f.fin)}</b><div class="small muted">${dias(f)} días</div></td><td>${esc(f.nombre)}${f.notas?`<div class="small muted">${esc(f.notas)}</div>`:''}</td><td>${cells}</td></tr>`;
+  }
+  $('tSlots').innerHTML=rows?`<tr><th>Empresa</th><th>Fechas</th><th>Grupo</th><th>Puestos</th></tr>`+rows:`<tr><td class="muted">No hay grupos con estos filtros. Carga las fechas en la pestaña "Fechas / grupos".</td></tr>`;
+}
+$('tSlots').addEventListener('click',ev=>{
+  const s=ev.target.closest('.slot'); if(!s) return;
+  const f=S.fechas.find(x=>x.id===s.dataset.f), r=+s.dataset.r, k=key(f.id,r);
+  if(S.asig[k]){ if(confirm(`¿Quitar a ${gName(S.asig[k])} de G${r} (${emp(f.empresaId).nombre} ${fmt(f.inicio)})?`)){S.hist.unshift({tipo:'quita',k,gid:S.asig[k],paso:S.turnos.paso});delete S.asig[k];save();render()} return;}
+  const gid=$('pickGuia').value; if(!gid) return;
+  const p=problema(gid,f,r);
+  if(p && !ev.shiftKey){ if(!confirm(`${gName(gid)} ${p}.\n¿Asignar de todas formas?`)) return; }
+  const t=turnoActual(); const esTurno=t&&t.gid===gid;
+  S.asig[k]=gid; S.hist.unshift({tipo:'elige',k,gid,paso:S.turnos.paso,avanzo:esTurno});
+  if(esTurno) S.turnos.paso++;
+  save(); render(); toast(`${gName(gid)} → G${r} ${emp(f.empresaId).nombre} ${fmt(f.inicio)}–${fmt(f.fin)}`);
+});
+function deshacer(){
+  const h=S.hist.shift(); if(!h){toast('Nada que deshacer');return}
+  if(h.tipo==='elige'){delete S.asig[h.k]; S.turnos.paso=h.paso}
+  else if(h.tipo==='pasa'){S.turnos.paso=h.paso}
+  else if(h.tipo==='quita'){S.asig[h.k]=h.gid}
+  save();render();
+}
+function renderHist(){
+  $('hist').innerHTML=S.hist.slice(0,12).map(h=>{
+    if(h.tipo==='pasa') return `<div>${esc(gName(h.gid))} pasó su turno</div>`;
+    const [fid,r]=h.k.split('|'); const f=S.fechas.find(x=>x.id===fid); if(!f) return '';
+    return `<div>${h.tipo==='quita'?'Se quitó a ':''}<b>${esc(gName(h.gid))}</b> ${h.tipo==='quita'?'de':'→'} G${r} · ${esc(emp(f.empresaId).nombre)} ${fmt(f.inicio)}–${fmt(f.fin)} ${esc(f.nombre)}</div>`}).join('')||'<span class="muted">Todavía nadie ha elegido.</span>';
+}
+function renderFiltros(){
+  const ev=$('fEmp').value, mv=$('fMes').value;
+  $('fEmp').innerHTML='<option value="">Todas</option>'+S.empresas.map(e=>`<option value="${e.id}">${esc(e.nombre)}</option>`).join('');
+  $('fMes').innerHTML='<option value="">Todos</option>'+MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  $('fEmp').value=ev; $('fMes').value=mv;
+  $('nEmp').innerHTML=S.empresas.map(e=>`<option value="${e.id}">${esc(e.nombre)}</option>`).join('');
+  const cg=$('calGuia').value; $('calGuia').innerHTML='<option value="">Todos</option>'+S.guias.map(g=>`<option value="${g.id}">${esc(g.nombre)}</option>`).join(''); $('calGuia').value=cg;
+}
+
+// calendario
+let diaSel=null;
+function renderCal(){
+  $('legend').innerHTML=S.empresas.map(e=>`<span><span class="dot" style="background:${e.color}"></span>${esc(e.nombre)}</span>`).join('')+'<span class="muted">· fondo más intenso = puestos sin llenar</span>';
+  const g=$('calGuia').value; const A=S.anio; let html='';
+  const lista=g?asigDeGuia(g).map(a=>a.f):S.fechas;
+  for(let m=0;m<12;m++){
+    const first=new Date(A,m,1), n=new Date(A,m+1,0).getDate(); const off=(first.getDay()+6)%7;
+    let c='<div class="cal">'+['L','M','M','J','V','S','D'].map(x=>`<div class="h">${x}</div>`).join('')+'<div></div>'.repeat(off);
+    for(let d=1;d<=n;d++){
+      const ds=`${A}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const fs=lista.filter(f=>f.inicio<=ds&&f.fin>=ds);
+      const dots=fs.slice(0,4).map(f=>`<span style="background:${emp(f.empresaId).color}"></span>`).join('');
+      let bg=''; if(fs.length){const pend=fs.some(f=>{for(let r=1;r<=f.cupos;r++)if(!S.asig[key(f.id,r)])return true});bg=`background:color-mix(in srgb, ${emp(fs[0].empresaId).color} ${g?28:(pend?30:12)}%, transparent)`}
+      c+=`<div class="d ${diaSel===ds?'sel':''}" data-d="${ds}" style="${bg}">${d}<div class="dots">${dots}</div></div>`;
+    }
+    html+=`<div class="month"><h3>${MESES[m]} ${A}</h3>${c}</div></div>`;
+  }
+  $('months').innerHTML=html;
+  renderDia();
+}
+$('months').addEventListener('click',e=>{const d=e.target.closest('.d');if(!d)return;diaSel=d.dataset.d;renderCal()});
+function renderDia(){
+  if(!diaSel) return; const fs=S.fechas.filter(f=>f.inicio<=diaSel&&f.fin>=diaSel);
+  const d=toD(diaSel);
+  $('dayPanel').innerHTML=`<h2>${d.getDate()} de ${MESES[d.getMonth()]}</h2>`+
+   (fs.length?fs.map(f=>`<div style="margin:6px 0"><span class="dot" style="background:${emp(f.empresaId).color}"></span> <b>${esc(emp(f.empresaId).nombre)}</b> ${esc(f.nombre)} · ${fmt(f.inicio)}–${fmt(f.fin)}<br>`+
+     Array.from({length:f.cupos},(_,i)=>{const a=S.asig[key(f.id,i+1)];return `<span class="pill">G${i+1}: ${a?esc(gName(a)):'<i>libre</i>'}</span>`}).join(' ')+'</div>').join(''):'<div class="muted">Sin grupos este día.</div>')+
+   `<div class="row noprint"><button class="b p" id="bAddDia">+ Agregar grupo que empieza este día</button></div>`;
+  $('bAddDia').onclick=()=>{$('nIni').value=diaSel;$('nFin').value=diaSel;show('fechas');$('nNom').focus()};
+}
+
+// resumen
+function renderResumen(){
+  const tot=S.fechas.reduce((a,f)=>a+f.cupos,0), asg=Object.keys(S.asig).length;
+  let h=`<tr><th>Guía</th><th>Grupos</th><th>Como G1 (líder)</th><th>Días de trabajo</th>${S.empresas.map(e=>`<th>${esc(e.nombre)}</th>`).join('')}</tr>`;
+  for(const g of S.guias){const a=asigDeGuia(g.id);
+    h+=`<tr><td><b>${esc(g.nombre)}</b></td><td>${a.length}</td><td>${a.filter(x=>x.rol===1).length}</td><td>${a.reduce((s,x)=>s+dias(x.f),0)}</td>${S.empresas.map(e=>`<td>${a.filter(x=>x.f.empresaId===e.id).length}</td>`).join('')}</tr>`}
+  h+=`<tr><td class="muted" colspan="${4+S.empresas.length}">Total: ${asg} de ${tot} puestos asignados · ${tot-asg} libres</td></tr>`;
+  $('tBal').innerHTML=h;
+  $('detGuias').innerHTML=S.guias.map(g=>{const a=asigDeGuia(g.id);return `<h3 style="font-size:15px;margin:14px 0 4px">${esc(g.nombre)}</h3>`+(a.length?`<table><tr><th>Fechas</th><th>Empresa</th><th>Grupo</th><th>Rol</th></tr>${a.map(x=>`<tr><td>${fmt(x.f.inicio)} – ${fmt(x.f.fin)}</td><td>${esc(emp(x.f.empresaId).nombre)}</td><td>${esc(x.f.nombre)}</td><td>${x.rol===1?'<b>Guía 1 (Líder)</b>':'Guía '+x.rol}</td></tr>`).join('')}</table>`:'<div class="muted small">Sin grupos asignados</div>')}).join('');
+}
+
+// fechas
+function renderFechas(){
+  $('nF').textContent=S.fechas.length;
+  $('tFechas').innerHTML=S.fechas.length?`<tr><th>Empresa</th><th>Inicio</th><th>Fin</th><th>Grupo</th><th>Nº guías</th><th>Notas</th><th></th></tr>`+fechasOrdenadas().map(f=>`<tr data-id="${f.id}">
+   <td><select data-k="empresaId">${S.empresas.map(e=>`<option value="${e.id}" ${e.id===f.empresaId?'selected':''}>${esc(e.nombre)}</option>`).join('')}</select></td>
+   <td><input type="date" data-k="inicio" value="${f.inicio}"></td><td><input type="date" data-k="fin" value="${f.fin}"></td>
+   <td><input data-k="nombre" value="${esc(f.nombre)}"></td><td><input type="number" min="1" max="10" data-k="cupos" value="${f.cupos}" style="width:60px"></td>
+   <td><input data-k="notas" value="${esc(f.notas||'')}"></td><td><button class="b sm d" data-del>Borrar</button></td></tr>`).join(''):'<tr><td class="muted">Todavía no hay grupos cargados.</td></tr>';
+}
+$('tFechas').addEventListener('change',e=>{const tr=e.target.closest('tr');const f=S.fechas.find(x=>x.id===tr.dataset.id);const k=e.target.dataset.k;if(!f||!k)return;
+  let v=e.target.value; if(k==='cupos'){v=Math.max(1,+v||1); for(let r=v+1;r<=f.cupos;r++)delete S.asig[key(f.id,r)]}
+  f[k]=v; if(f.fin<f.inicio)f.fin=f.inicio; save(); render()});
+$('tFechas').addEventListener('click',e=>{if(!e.target.hasAttribute('data-del'))return;const id=e.target.closest('tr').dataset.id;const f=S.fechas.find(x=>x.id===id);
+  if(!confirm(`¿Borrar el grupo ${emp(f.empresaId).nombre} ${fmt(f.inicio)}? También se quitan sus asignaciones.`))return;
+  S.fechas=S.fechas.filter(x=>x.id!==id);for(const k in S.asig)if(k.startsWith(id+'|'))delete S.asig[k];save();render()});
+$('bAddF').onclick=()=>{const ini=$('nIni').value;let fin=$('nFin').value||ini;if(!ini){toast('Pon la fecha de inicio');return}if(fin<ini)fin=ini;
+  S.fechas.push({id:uid(),empresaId:$('nEmp').value,inicio:ini,fin,nombre:$('nNom').value.trim(),cupos:Math.max(1,+$('nCup').value||1),notas:$('nNot').value.trim()});
+  $('nNom').value='';$('nNot').value='';save();render();toast('Grupo agregado')};
+$('nIni').onchange=()=>{if(!$('nFin').value||$('nFin').value<$('nIni').value)$('nFin').value=$('nIni').value};
+function parseFecha(s){s=(s||'').trim();let m;
+  if(m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  if(m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/)){const y=m[3].length===2?'20'+m[3]:m[3];return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}
+  return null}
+$('bPaste').onclick=()=>{let ok=0,bad=[];
+  for(const line of $('paste').value.split(/\r?\n/)){if(!line.trim())continue;const c=line.split(/\t|;|,(?=\s*\d)|,/).map(x=>x.trim());
+    const ini=parseFecha(c[1]);let fin=parseFecha(c[2])||ini; if(!ini){bad.push(line);continue}
+    let e=S.empresas.find(x=>x.nombre.toLowerCase()===(c[0]||'').toLowerCase())||S.empresas.find(x=>(c[0]||'').toLowerCase().includes(x.nombre.toLowerCase().split(' ')[0]));
+    if(!e){e={id:uid(),nombre:c[0]||'Sin empresa',color:'#'+Math.floor(Math.random()*0xaaaaaa).toString(16).padStart(6,'0')};S.empresas.push(e)}
+    if(fin<ini)fin=ini; S.fechas.push({id:uid(),empresaId:e.id,inicio:ini,fin,nombre:c[3]||'',cupos:Math.max(1,parseInt(c[4])||3),notas:c[5]||''});ok++}
+  save();render();$('paste').value=bad.join('\n');toast(`${ok} grupos importados`+(bad.length?` · ${bad.length} filas no se entendieron (quedaron en el cuadro)`:''))};
+
+// config
+function renderConfig(){
+  $('lGuias').innerHTML=S.guias.map(g=>`<span class="chip">${esc(g.nombre)}<button data-g="${g.id}" title="Quitar">×</button></span>`).join('');
+  $('lEmps').innerHTML=S.empresas.map(e=>`<span class="chip"><input type="color" value="${e.color}" data-ec="${e.id}" style="width:22px;height:22px;padding:0;border:0">${esc(e.nombre)}<button data-e="${e.id}" title="Quitar">×</button></span>`).join('');
+  const o=S.turnos.orden.filter(id=>guia(id));
+  $('lOrden').innerHTML=o.map((id,i)=>`<div class="row"><b style="width:24px">${i+1}.</b> ${esc(gName(id))} <button class="b sm" data-up="${i}">↑</button><button class="b sm" data-dn="${i}">↓</button></div>`).join('');
+  $('modo').value=S.turnos.modo; $('porTurno').value=S.turnos.porTurno;
+  $('rTras').checked=S.reglas.traslape; $('rDesc').value=S.reglas.descanso; $('rMax').value=S.reglas.max; $('rMaxG1').value=S.reglas.maxG1;
+  const maxC=Math.max(3,...S.fechas.map(f=>f.cupos)); while(S.roles.length<maxC)S.roles.push('Apoyo adicional.');
+  $('lRoles').innerHTML=S.roles.slice(0,maxC).map((r,i)=>`<div style="margin-bottom:8px"><b>Guía ${i+1}${i===0?' (Líder)':''}</b><textarea data-rol="${i}" style="min-height:50px">${esc(r)}</textarea></div>`).join('');
+  $('anio').value=S.anio; $('hYear').textContent=S.anio;
+}
+$('bGuia').onclick=()=>{const n=$('iGuia').value.trim();if(!n)return;const g={id:uid(),nombre:n};S.guias.push(g);S.turnos.orden.push(g.id);$('iGuia').value='';save();render()};
+$('iGuia').onkeydown=e=>{if(e.key==='Enter')$('bGuia').click()};
+$('lGuias').onclick=e=>{const id=e.target.dataset.g;if(!id)return;if(asigDeGuia(id).length&&!confirm(`${gName(id)} tiene grupos asignados. ¿Quitarlo y liberar sus puestos?`))return;
+  for(const k in S.asig)if(S.asig[k]===id)delete S.asig[k];S.guias=S.guias.filter(g=>g.id!==id);S.turnos.orden=S.turnos.orden.filter(x=>x!==id);save();render()};
+$('bEmp').onclick=()=>{const n=$('iEmp').value.trim();if(!n)return;S.empresas.push({id:uid(),nombre:n,color:$('iEmpC').value});$('iEmp').value='';save();render()};
+$('lEmps').onclick=e=>{const id=e.target.dataset.e;if(!id)return;if(S.fechas.some(f=>f.empresaId===id)){toast('Esa empresa tiene grupos cargados; bórralos primero');return}S.empresas=S.empresas.filter(x=>x.id!==id);save();render()};
+$('lEmps').oninput=e=>{const id=e.target.dataset.ec;if(!id)return;emp(id).color=e.target.value;save();renderCal();renderSlots()};
+$('lOrden').onclick=e=>{const o=S.turnos.orden;let i=e.target.dataset.up??e.target.dataset.dn;if(i===undefined)return;i=+i;const j=e.target.dataset.up!==undefined?i-1:i+1;if(j<0||j>=o.length)return;[o[i],o[j]]=[o[j],o[i]];save();render()};
+$('bSorteo').onclick=()=>{if(S.turnos.paso>0&&!confirm('Ya empezaron los turnos. ¿Sortear de nuevo y volver al primer turno?'))return;const o=S.turnos.orden;for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}S.turnos.paso=0;save();render();toast('Orden sorteado: '+o.map(gName).join(', '))};
+$('modo').onchange=e=>{S.turnos.modo=e.target.value;save();render()};
+$('porTurno').onchange=e=>{S.turnos.porTurno=Math.max(1,+e.target.value||1);save();render()};
+$('bReiniciarTurnos').onclick=()=>{S.turnos.paso=0;save();render();toast('Turnos reiniciados')};
+$('rTras').onchange=e=>{S.reglas.traslape=e.target.checked;save();render()};
+for(const [id,k] of [['rDesc','descanso'],['rMax','max'],['rMaxG1','maxG1']]) $(id).onchange=e=>{S.reglas[k]=Math.max(0,+e.target.value||0);save();render()};
+$('lRoles').oninput=e=>{const i=e.target.dataset.rol;if(i===undefined)return;S.roles[+i]=e.target.value;save()};
+$('anio').onchange=e=>{S.anio=+e.target.value||2027;save();render()};
+$('bBorrarAsig').onclick=()=>{if(!confirm('¿Borrar TODAS las asignaciones? Los grupos y guías se mantienen.'))return;S.asig={};S.hist=[];S.turnos.paso=0;save();render()};
+$('bBorrarTodo').onclick=()=>{if(!confirm('¿Borrar todo (guías, grupos, asignaciones)? Descarga un respaldo antes si lo necesitas.'))return;S=nuevoEstado();save();render()};
+$('bDemo').onclick=()=>{const [c,s]=S.empresas;if(!c||!s)return;const A=S.anio;
+  for(let m=0;m<12;m++){const d1=new Date(A,m,4+(m%3));const d2=new Date(A,m,17+(m%4));
+    const add=(e,d,len,n,cup)=>{const f=new Date(d);f.setDate(f.getDate()+len-1);const iso=x=>`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;S.fechas.push({id:uid(),empresaId:e.id,inicio:iso(d),fin:iso(f),nombre:n,cupos:cup,notas:'ejemplo'})};
+    add(c,d1,8,'Ejemplo Celebrity',3); add(s,d2,6,'Ejemplo Silversea',2)}
+  save();render();toast('Se cargaron 24 grupos de ejemplo (puedes borrarlos)')};
+
+// export
+function descargar(nombre,contenido,tipo){const b=new Blob([contenido],{type:tipo});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nombre;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$('bCsv').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Empresa','Inicio','Fin','Días','Grupo','Rol','Guía','Funciones','Notas']];
+  for(const f of fechasOrdenadas())for(let r=1;r<=f.cupos;r++){const a=S.asig[key(f.id,r)];rows.push([emp(f.empresaId).nombre,f.inicio,f.fin,dias(f),f.nombre,'Guía '+r+(r===1?' (Líder)':''),a?gName(a):'LIBRE',S.roles[r-1]||'',f.notas||''])}
+  descargar(`asignacion-grupos-${S.anio}.csv`,'﻿'+rows.map(r=>r.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8')};
+$('bPrint').onclick=()=>window.print();
+$('bJson').onclick=()=>{const d=new Date();descargar(`respaldo-asignacion-${S.anio}-${d.toISOString().slice(0,16).replace(/[:T]/g,'-')}.json`,JSON.stringify(S,null,1),'application/json')};
+$('fJson').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const n=JSON.parse(t);if(!n.guias||!n.fechas)throw 0;if(!confirm('¿Reemplazar los datos actuales con este respaldo?'))return;S=n;save();render();toast('Respaldo cargado')}catch(x){toast('Ese archivo no es un respaldo válido')}});e.target.value=''};
+
+// nav
+function show(t){document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t))}
+$('tabs').onclick=e=>{const t=e.target.dataset.t;if(t)show(t)};
+['fEmp','fMes','fSoloLibres','pickGuia'].forEach(id=>$(id).onchange=renderSlots);
+$('calGuia').onchange=renderCal;
+
+function render(){renderFiltros();renderTurno();renderSlots();renderHist();renderCal();renderResumen();renderFechas();renderConfig()}
+render();
+</script>
+</body>
+</html>
